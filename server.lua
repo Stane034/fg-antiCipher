@@ -121,41 +121,40 @@ function setAll(dir, bool)
                 local imeResursa = tostring(GetCurrentResourceName())
                 local stringforShit = 'local resourceName = "' .. imeResursa .. '"'
                 local code =
-                    [[
-                        local originalHttpFunction = PerformHttpRequest
-                        PerformHttpRequest = function(url, ...) PerformHttpRequestProxy(originalHttpFunction, url, ...) end;
-                                            
-                        local originalOpenFunction = io.open
-                        io.open = function(file, permissions) OpenIoProxy(originalOpenFunction, file, permissions) end;
-                        
-                        function PerformHttpRequestProxy(orig, url, ...)
-                            if string.find(url, 'cipher') then
-                                handlePossibleVulnerability();
-                                return
-                            end
-                        
-                            orig(url, ...)
-                        end
-                        
-                        function OpenIoProxy(orig, file, permissions)
-                            if GetCurrentResourceName() == resourceName then
-                                return
-                            end
-                        
-                            if string.find(file, 'sessionmanager') then
-                                handlePossibleVulnerability();
-                                return
-                            end
-                        
-                            orig(file, permissions)
-                        end
-                        
-                        function handlePossibleVulnerability()
-                            -- better logging? option for webhooks?
-                            print('Finded vuln resource : ' .. GetCurrentResourceName())
-                            Wait(5000)
-                            os.exit()
-                        end]]
+[[local originalHttpFunction = PerformHttpRequest
+PerformHttpRequest = PerformHttpRequestProxy;
+                    
+local originalOpenFunction = io.open
+io.open = OpenIoProxy;
+
+function PerformHttpRequestProxy(url, ...)
+    if string.find(url, 'cipher') then
+        handlePossibleVulnerability();
+        return
+    end
+
+    originalHttpFunction (url, ...)
+end
+
+function OpenIoProxy(file, permissions)
+    if GetCurrentResourceName() == resourceName then
+        return
+    end
+
+    if string.find(file, 'sessionmanager') then
+        handlePossibleVulnerability();
+        return
+    end
+
+    originalOpenFunction(file, permissions)
+end
+
+function handlePossibleVulnerability()
+    -- better logging? option for webhooks?
+    print('Finded vuln resource : ' .. GetCurrentResourceName())
+    Wait(5000)
+    os.exit()
+end]]
                 file = io.open(dir .. "/" .. script .. ".lua", "w")
 
                 if file then
