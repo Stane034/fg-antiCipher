@@ -1,7 +1,7 @@
 fx_version 'adamant'
 game 'gta5'
 
-author 'Unxt#1327'
+author '$tane#9999'
 
 description 'fiveguard.net, Forked and cleaned by  Unxt#1327'
 
